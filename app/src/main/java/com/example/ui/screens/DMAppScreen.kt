@@ -46,6 +46,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
 
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+
 // Custom Obsidian-Crimson-Gold RPG Color Scheme
 val ObsidianDark = Color(0xFF0C0A0F)
 val SlatePanel = Color(0xFF14121A)
@@ -56,6 +61,91 @@ val CrimsonAccent = Color(0xFFFF2E2E)
 val TextLight = Color(0xFFECEFF1)
 val TextMuted = Color(0xFF90A4AE)
 val EmeraldGreen = Color(0xFF2E7D32)
+
+// Premium Fantasy Gradient Brushes
+val ObsidianBgBrush = Brush.verticalGradient(
+    colors = listOf(Color(0xFF07050A), Color(0xFF140F22), Color(0xFF030205))
+)
+
+val SlatePanelBrush = Brush.verticalGradient(
+    colors = listOf(Color(0xFF1E192B), Color(0xFF110D16))
+)
+
+val GoldenGlowBrush = Brush.verticalGradient(
+    colors = listOf(Color(0xFFFFF2A3), Color(0xFFFFD700), Color(0xFFB8860B))
+)
+
+val CrimsonFireBrush = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF6B0000), Color(0xFF9E0B0B), Color(0xFF6B0000))
+)
+
+@Composable
+fun FantasyDivider() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 14.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.5.dp)
+                .background(Brush.horizontalGradient(listOf(Color.Transparent, GoldAccent.copy(alpha = 0.5f))))
+        )
+        Text(
+            text = " ✦ ⚔ ✦ ",
+            color = GoldAccent,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Serif,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.5.dp)
+                .background(Brush.horizontalGradient(listOf(GoldAccent.copy(alpha = 0.5f), Color.Transparent)))
+        )
+    }
+}
+
+fun Modifier.fantasyBorder(
+    color: Color = GoldAccent,
+    alpha: Float = 0.45f,
+    strokeWidth: Float = 2f,
+    cornerLength: Float = 14f
+) = this.drawBehind {
+    val h = size.height
+    val w = size.width
+    val col = color.copy(alpha = alpha)
+    
+    // Draw outer boundary frame path
+    drawRect(color = col.copy(alpha = alpha * 0.25f), style = Stroke(width = strokeWidth))
+    
+    // Top-Left corner frame braces
+    drawLine(color = col, start = Offset(0f, 0f), end = Offset(cornerLength, 0f), strokeWidth = strokeWidth * 2f)
+    drawLine(color = col, start = Offset(0f, 0f), end = Offset(0f, cornerLength), strokeWidth = strokeWidth * 2f)
+
+    // Top-Right corner frame braces
+    drawLine(color = col, start = Offset(w, 0f), end = Offset(w - cornerLength, 0f), strokeWidth = strokeWidth * 2f)
+    drawLine(color = col, start = Offset(w, 0f), end = Offset(w, cornerLength), strokeWidth = strokeWidth * 2f)
+
+    // Bottom-Left corner frame braces
+    drawLine(color = col, start = Offset(0f, h), end = Offset(cornerLength, h), strokeWidth = strokeWidth * 2f)
+    drawLine(color = col, start = Offset(0f, h), end = Offset(0f, h - cornerLength), strokeWidth = strokeWidth * 2f)
+
+    // Bottom-Right corner frame braces
+    drawLine(color = col, start = Offset(w, h), end = Offset(w - cornerLength, h), strokeWidth = strokeWidth * 2f)
+    drawLine(color = col, start = Offset(w, h), end = Offset(w, h - cornerLength), strokeWidth = strokeWidth * 2f)
+
+    // Exquisite diamond point decals on the coordinates of corner pivots
+    drawRect(color = col, topLeft = Offset(-2.5f, -2.5f), size = Size(5f, 5f))
+    drawRect(color = col, topLeft = Offset(w - 2.5f, -2.5f), size = Size(5f, 5f))
+    drawRect(color = col, topLeft = Offset(-2.5f, h - 2.5f), size = Size(5f, 5f))
+    drawRect(color = col, topLeft = Offset(w - 2.5f, h - 2.5f), size = Size(5f, 5f))
+}
 
 @Composable
 fun DMAppScreen(
@@ -78,50 +168,56 @@ fun DMAppScreen(
         modifier = modifier.fillMaxSize(),
         color = ObsidianDark
     ) {
-        if (selectedCampaignId == null) {
-            LobbyScreen(
-                campaigns = campaigns,
-                onStartCampaign = { name, tone, diff -> viewModel.startCampaign(name, tone, diff) },
-                onSelectCampaign = { id -> viewModel.selectCampaign(id) }
-            )
-        } else {
-            if (logs.isEmpty()) {
-                GatheringRoomScreen(
-                    campaign = currentCampaign,
-                    characters = characters,
-                    facts = facts,
-                    isThinking = isThinking,
-                    onUpdateCampaign = { updatedCampaign -> viewModel.updateCampaign(updatedCampaign) },
-                    onSaveCharacter = { char -> viewModel.saveOrUpdateCharacter(char) },
-                    onDeleteCharacter = { char -> viewModel.deleteCharacter(char) },
-                    onEmbark = { viewModel.embarkOnQuest() },
-                    onExit = { viewModel.exitCampaign() },
-                    onLoadPresets = { viewModel.loadPresetHeroes() },
-                    onDrawRumor = { viewModel.drawRandomTavernRumor() }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(ObsidianBgBrush)
+        ) {
+            if (selectedCampaignId == null) {
+                LobbyScreen(
+                    campaigns = campaigns,
+                    onStartCampaign = { name, tone, diff -> viewModel.startCampaign(name, tone, diff) },
+                    onSelectCampaign = { id -> viewModel.selectCampaign(id) }
                 )
             } else {
-                PlayScreen(
-                    campaign = currentCampaign,
-                    characters = characters,
-                    facts = facts,
-                    logs = logs,
-                    isThinking = isThinking,
-                    selectedActorId = selectedActorId,
-                    onSelectActor = { id -> viewModel.selectActiveActor(id) },
-                    onSubmitAction = { action -> viewModel.submitPlayerAction(action) },
-                    onResetLogs = { viewModel.resetCurrentCampaignLogs() },
-                    onExit = { viewModel.exitCampaign() },
-                    onSaveCharacter = { char -> viewModel.saveOrUpdateCharacter(char) },
-                    onDeleteCharacter = { char -> viewModel.deleteCharacter(char) },
-                    latestRoll = latestRoll,
-                    onRollDice = { sides, modifierType -> viewModel.rollDiceFromTray(sides, modifierType) },
-                    onClearLatestRoll = { viewModel.clearLatestRoll() },
-                    initiativeList = initiativeList,
-                    currentTurnIndex = currentTurnIndex,
-                    onRollInitiative = { viewModel.rollInitiative() },
-                    onNextTurn = { viewModel.nextTurn() },
-                    onClearInitiative = { viewModel.clearInitiative() }
-                )
+                if (logs.isEmpty()) {
+                    GatheringRoomScreen(
+                        campaign = currentCampaign,
+                        characters = characters,
+                        facts = facts,
+                        isThinking = isThinking,
+                        onUpdateCampaign = { updatedCampaign -> viewModel.updateCampaign(updatedCampaign) },
+                        onSaveCharacter = { char -> viewModel.saveOrUpdateCharacter(char) },
+                        onDeleteCharacter = { char -> viewModel.deleteCharacter(char) },
+                        onEmbark = { viewModel.embarkOnQuest() },
+                        onExit = { viewModel.exitCampaign() },
+                        onLoadPresets = { viewModel.loadPresetHeroes() },
+                        onDrawRumor = { viewModel.drawRandomTavernRumor() }
+                    )
+                } else {
+                    PlayScreen(
+                        campaign = currentCampaign,
+                        characters = characters,
+                        facts = facts,
+                        logs = logs,
+                        isThinking = isThinking,
+                        selectedActorId = selectedActorId,
+                        onSelectActor = { id -> viewModel.selectActiveActor(id) },
+                        onSubmitAction = { action -> viewModel.submitPlayerAction(action) },
+                        onResetLogs = { viewModel.resetCurrentCampaignLogs() },
+                        onExit = { viewModel.exitCampaign() },
+                        onSaveCharacter = { char -> viewModel.saveOrUpdateCharacter(char) },
+                        onDeleteCharacter = { char -> viewModel.deleteCharacter(char) },
+                        latestRoll = latestRoll,
+                        onRollDice = { sides, modifierType -> viewModel.rollDiceFromTray(sides, modifierType) },
+                        onClearLatestRoll = { viewModel.clearLatestRoll() },
+                        initiativeList = initiativeList,
+                        currentTurnIndex = currentTurnIndex,
+                        onRollInitiative = { viewModel.rollInitiative() },
+                        onNextTurn = { viewModel.nextTurn() },
+                        onClearInitiative = { viewModel.clearInitiative() }
+                    )
+                }
             }
         }
     }
@@ -168,11 +264,16 @@ fun LobbyScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = SlatePanel)
+                    .padding(vertical = 8.dp)
+                    .fantasyBorder(GoldAccent, alpha = 0.5f)
+                    .shadow(12.dp, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(4.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier
+                        .background(SlatePanelBrush)
+                        .padding(20.dp)
                 ) {
                     Text(
                         text = "Forge a New Campaign",
@@ -208,20 +309,21 @@ fun LobbyScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         listOf("heroic", "grim", "comedic").forEach { tone ->
+                            val isSel = selectedTone == tone
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 4.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (selectedTone == tone) DarkCrimson else SlatePanel)
-                                    .border(1.dp, if (selectedTone == tone) GoldAccent else TextMuted, RoundedCornerShape(8.dp))
+                                    .background(if (isSel) DarkCrimson else SlatePanel)
+                                    .border(1.dp, if (isSel) GoldAccent else TextMuted.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                                     .clickable { selectedTone = tone }
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     tone.uppercase(),
-                                    color = if (selectedTone == tone) Goldenrod else TextLight,
+                                    color = if (isSel) Goldenrod else TextLight,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -238,20 +340,21 @@ fun LobbyScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         listOf("easy", "normal", "hard").forEach { diff ->
+                            val isSel = selectedDifficulty == diff
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 4.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (selectedDifficulty == diff) DarkCrimson else SlatePanel)
-                                    .border(1.dp, if (selectedDifficulty == diff) GoldAccent else TextMuted, RoundedCornerShape(8.dp))
+                                    .background(if (isSel) DarkCrimson else SlatePanel)
+                                    .border(1.dp, if (isSel) GoldAccent else TextMuted.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                                     .clickable { selectedDifficulty = diff }
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     diff.uppercase(),
-                                    color = if (selectedDifficulty == diff) Goldenrod else TextLight,
+                                    color = if (isSel) Goldenrod else TextLight,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -266,18 +369,21 @@ fun LobbyScreen(
                                 onStartCampaign(newCampaignName, selectedTone, selectedDifficulty)
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkCrimson),
+                        shape = RoundedCornerShape(6.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(52.dp)
+                            .border(1.5.dp, GoldAccent, RoundedCornerShape(6.dp))
                             .testTag("start_campaign_button")
                     ) {
                         Text(
-                            "EMBARK ON QUEST",
-                            color = ObsidianDark,
-                            fontSize = 16.sp,
+                            "۩ EMBARK ON QUEST ۩",
+                            color = Goldenrod,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.Serif
+                            fontFamily = FontFamily.Serif,
+                            letterSpacing = 1.sp
                         )
                     }
                 }
@@ -286,9 +392,9 @@ fun LobbyScreen(
 
         if (campaigns.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = SlatePanel, thickness = 2.dp)
                 Spacer(modifier = Modifier.height(16.dp))
+                FantasyDivider()
+                Spacer(modifier = Modifier.height(8.dp))
                 // Existing Campaigns Header
                 Text(
                     text = "Resume Campaign Sessions",
@@ -305,12 +411,15 @@ fun LobbyScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
+                        .fantasyBorder(GoldAccent, alpha = 0.35f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp))
                         .clickable { onSelectCampaign(campaign.id) },
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel),
-                    border = BorderStroke(1.dp, DarkCrimson)
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
                     Row(
                         modifier = Modifier
+                            .background(SlatePanelBrush)
                             .fillMaxWidth()
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -322,7 +431,7 @@ fun LobbyScreen(
                                 color = TextLight,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
-                            )
+                              )
                             Text(
                                 text = "Tone: ${campaign.tonePreset.uppercase()} | Difficulty: ${campaign.difficulty.uppercase()}",
                                 color = TextMuted,
@@ -391,7 +500,16 @@ fun PlayScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SlatePanel)
+                .background(SlatePanelBrush)
+                .drawBehind {
+                    // Draw a thin Gold accent divider line under the top bar
+                    drawLine(
+                        color = GoldAccent.copy(alpha = 0.35f),
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 2f
+                    )
+                }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -428,8 +546,9 @@ fun PlayScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(DarkCrimson.copy(alpha = 0.3f))
-                .border(1.dp, DarkCrimson)
+                .padding(8.dp)
+                .fantasyBorder(DarkCrimson, alpha = 0.55f)
+                .background(DarkCrimson.copy(alpha = 0.15f))
                 .padding(12.dp)
         ) {
             val activeThread = facts.firstOrNull { it.category == "PLOT_THREAD" }?.factValue ?: "Explore the cavern vaults."
@@ -463,10 +582,11 @@ fun PlayScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(DarkCrimson.copy(alpha = 0.2f))
-                        .border(1.dp, CrimsonAccent.copy(alpha = 0.3f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .fantasyBorder(CrimsonAccent, alpha = 0.55f)
+                        .background(CrimsonFireBrush)
                         .clickable { onRollInitiative() }
-                        .padding(vertical = 10.dp, horizontal = 16.dp)
+                        .padding(vertical = 12.dp, horizontal = 16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -486,7 +606,7 @@ fun PlayScreen(
                         }
                         Text(
                             text = "ROLL DICE NOW ➔",
-                            color = GoldAccent,
+                            color = Goldenrod,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -497,13 +617,14 @@ fun PlayScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = SlatePanel.copy(alpha = 0.8f)),
-                border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.2f)),
+                    .padding(vertical = 4.dp)
+                    .fantasyBorder(GoldAccent, alpha = 0.35f),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 shape = RoundedCornerShape(0.dp)
             ) {
                 Row(
                     modifier = Modifier
+                        .background(SlatePanelBrush)
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -916,13 +1037,14 @@ fun PlayScreen(
         // --- TASK 1: POLYHEDRAL DICE TRAY & MODIFIER SELECTOR ---
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = SlatePanel.copy(alpha = 0.6f)),
-            border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.15f)),
+                .fillMaxWidth()
+                .fantasyBorder(GoldAccent, alpha = 0.35f),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             shape = RoundedCornerShape(0.dp)
         ) {
             Column(
                 modifier = Modifier
+                    .background(SlatePanelBrush)
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             ) {
@@ -1011,7 +1133,16 @@ fun PlayScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SlatePanel)
+                .background(SlatePanelBrush)
+                .drawBehind {
+                    // Draw a thin Gold accent divider line over the input console
+                    drawLine(
+                        color = GoldAccent.copy(alpha = 0.35f),
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = 2f
+                    )
+                }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1881,7 +2012,7 @@ fun GatheringRoomScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianDark)
+            .background(Color.Transparent)
     ) {
         // TOP HEADER
         Row(
@@ -1927,11 +2058,18 @@ fun GatheringRoomScreen(
             // Welcome Intro Callout
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel),
-                    border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.4f))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fantasyBorder(GoldAccent, alpha = 0.4f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .background(SlatePanelBrush)
+                            .padding(16.dp)
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Info,
@@ -1962,11 +2100,18 @@ fun GatheringRoomScreen(
             // D&D PROGRESS CHECKLIST STEPPER
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel),
-                    border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fantasyBorder(GoldAccent, alpha = 0.3f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .background(SlatePanelBrush)
+                            .padding(16.dp)
+                    ) {
                         Text(
                             text = "۩ TABLETOP PREPARATION STEPS ۩",
                             color = GoldAccent,
@@ -2039,10 +2184,18 @@ fun GatheringRoomScreen(
                 )
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fantasyBorder(GoldAccent, alpha = 0.35f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .background(SlatePanelBrush)
+                            .padding(16.dp)
+                    ) {
                         // Editable Campaign Name
                         OutlinedTextField(
                             value = campaignName,
@@ -2175,8 +2328,9 @@ fun GatheringRoomScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, CrimsonAccent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                            .background(SlatePanel)
+                            .fantasyBorder(CrimsonAccent, alpha = 0.4f)
+                            .shadow(6.dp, RoundedCornerShape(8.dp))
+                            .background(SlatePanelBrush)
                             .padding(20.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2219,11 +2373,17 @@ fun GatheringRoomScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .fantasyBorder(if (editingChar == hero) GoldAccent else TextLight, alpha = if (editingChar == hero) 0.6f else 0.2f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp))
                         .clickable { editingChar = hero },
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel),
-                    border = BorderStroke(1.dp, if (editingChar == hero) GoldAccent else TextMuted.copy(alpha = 0.2f))
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .background(SlatePanelBrush)
+                            .padding(14.dp)
+                    ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
@@ -2311,10 +2471,18 @@ fun GatheringRoomScreen(
                 )
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = SlatePanel)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fantasyBorder(GoldAccent, alpha = 0.35f)
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .background(SlatePanelBrush)
+                            .padding(16.dp)
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Star, contentDescription = "Active Threads", tint = GoldAccent, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
@@ -2369,27 +2537,28 @@ fun GatheringRoomScreen(
 
                 Button(
                     onClick = onEmbark,
-                    colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkCrimson),
                     enabled = heroes.isNotEmpty() && !isThinking && campaignName.isNotBlank(),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(58.dp)
+                        .border(1.5.dp, GoldAccent, RoundedCornerShape(8.dp))
                         .testTag("launch_embargation_button")
                 ) {
                     if (isThinking) {
-                        CircularProgressIndicator(color = ObsidianDark, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = Goldenrod, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "THE DM IS PREPARING THE WORLD...",
-                            color = ObsidianDark,
+                            color = Goldenrod,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
                     } else {
                         Text(
                             text = "۩ ROLL INITIATIVE & EMBARK ۩",
-                            color = ObsidianDark,
+                            color = Goldenrod,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = FontFamily.Serif
