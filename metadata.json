@@ -1,0 +1,6 @@
+{
+  "name": "Autonomous DM",
+  "description": "An autonomous D&D Dungeon Master app that handles rules, rolls, states, and narrative with AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
